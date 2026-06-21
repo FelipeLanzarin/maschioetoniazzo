@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
   const [sortField, sortDir] = sortBy.split('_')
   const sortMap: Record<string, string> = { dueDate: 'dueDate', amount: 'amount' }
-  const sort: Record<string, number> = { [sortMap[sortField] || 'dueDate']: sortDir === 'desc' ? -1 : 1 }
+  const sort: Record<string, 1 | -1> = { [sortMap[sortField] || 'dueDate']: sortDir === 'desc' ? -1 : 1 }
 
   const accounts = await Account.find(filter)
     .populate('clientId', 'name')

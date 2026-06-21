@@ -52,9 +52,10 @@ export async function deactivateClient(id: string): Promise<ClientFormState> {
   await Client.findByIdAndUpdate(id, { active: false })
   revalidatePath(`/clientes/${id}`)
   revalidatePath('/clientes')
+  return undefined
 }
 
-export async function reactivateClient(id: string): Promise<ClientFormState> {
+export async function reactivateClient(id: string): Promise<void> {
   await connectDB()
   await Client.findByIdAndUpdate(id, { active: true })
   revalidatePath(`/clientes/${id}`)

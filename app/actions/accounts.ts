@@ -74,14 +74,14 @@ export async function updateAccount(id: string, _prev: AccountFormState, formDat
   redirect(`/contas/${id}`)
 }
 
-export async function cancelAccount(id: string): Promise<AccountFormState> {
+export async function cancelAccount(id: string): Promise<void> {
   await connectDB()
   await Account.findByIdAndUpdate(id, { status: 'cancelled' })
   revalidatePath(`/contas/${id}`)
   revalidatePath('/contas')
 }
 
-export async function deleteAccount(id: string): Promise<AccountFormState> {
+export async function deleteAccount(id: string): Promise<void> {
   await connectDB()
   await Account.findByIdAndDelete(id)
   revalidatePath('/contas')

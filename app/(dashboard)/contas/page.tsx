@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { connectDB } from '@/lib/mongodb'
 
 import Account from '@/models/Account'
+import '@/models/Client'
 import { verifySession } from '@/lib/dal'
 import { AccountFilters } from './AccountFilters'
 import { AccountTable } from './AccountTable'
@@ -57,10 +58,16 @@ export default async function ContasPage({ searchParams }: { searchParams: Promi
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  let accounts = (rawAccounts as any[]).map(a => ({
-    ...a,
+  const accounts = (rawAccounts as any[]).map(a => ({
+    _id: String(a._id),
+    clientId: a.clientId ? { name: String(a.clientId.name) } : null,
+    description: String(a.description),
+    dueDate: (a.dueDate as Date).toISOString(),
+    amount: Number(a.amount),
+    totalPaid: Number(a.totalPaid),
+    status: a.status as 'open' | 'paid' | 'cancelled',
     overdue: a.status === 'open' && new Date(a.dueDate) < today,
-    balance: a.amount - a.totalPaid,
+    balance: Number(a.amount) - Number(a.totalPaid),
   }))
 
   return (
@@ -83,7 +90,7 @@ export default async function ContasPage({ searchParams }: { searchParams: Promi
           <AccountFilters />
         </div>
 
-        <AccountTable accounts={accounts.map(a => ({ ...a, _id: a._id.toString() }))} />
+        <AccountTable accounts={accounts} />
 
         <Pagination page={page} totalPages={totalPages} total={total} />
       </div>

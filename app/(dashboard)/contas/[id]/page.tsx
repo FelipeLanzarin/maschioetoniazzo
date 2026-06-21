@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { connectDB } from '@/lib/mongodb'
 import Account from '@/models/Account'
+import '@/models/Client'
 import { verifySession } from '@/lib/dal'
 import { AccountStatusBadge } from '@/components/financial/AccountStatusBadge'
 import { PaymentSection } from './PaymentSection'
@@ -97,9 +98,9 @@ export default async function ContaDetailPage({ params }: PageProps) {
         status={account.status}
         balance={balance}
         payments={account.payments.map((p: any) => ({
-          _id: p._id.toString(),
-          paymentDate: p.paymentDate,
-          amountPaid: p.amountPaid,
+          _id: String(p._id),
+          paymentDate: (p.paymentDate as Date).toISOString(),
+          amountPaid: Number(p.amountPaid),
         }))}
       />
     </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import Account from '@/models/Account'
+import '@/models/Client'
 import { getSession } from '@/lib/session'
 import { startOfToday } from '@/lib/dates'
 

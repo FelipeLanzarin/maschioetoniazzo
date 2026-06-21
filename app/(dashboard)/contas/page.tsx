@@ -60,7 +60,7 @@ export default async function ContasPage({ searchParams }: { searchParams: Promi
 
   const accounts = (rawAccounts as any[]).map(a => ({
     _id: String(a._id),
-    clientId: a.clientId ? { name: String(a.clientId.name) } : null,
+    clientId: a.clientId ? { name: String(a.clientId.name) } : undefined,
     description: String(a.description),
     dueDate: (a.dueDate as Date).toISOString(),
     amount: Number(a.amount),

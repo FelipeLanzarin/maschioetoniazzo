@@ -20,6 +20,7 @@ export default async function ContasPage({ searchParams }: { searchParams: Promi
   const { clientId, description, status, startDate, endDate, sortBy = 'dueDate_asc', page: pageParam } = sp
   const page = Math.max(1, parseInt(pageParam ?? '1'))
 
+  const today = startOfToday()
   const filter: Record<string, unknown> = {}
 
   if (status === 'overdue') {
@@ -55,7 +56,6 @@ export default async function ContasPage({ searchParams }: { searchParams: Promi
   ])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const today = startOfToday()
 
   let accounts = (rawAccounts as any[]).map(a => ({
     ...a,

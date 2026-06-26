@@ -17,6 +17,7 @@ export default function EditarContaPage({ params }: PageProps) {
   const [account, setAccount] = useState<any>(null)
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('')
 
   useEffect(() => {
     fetch(`/api/accounts/${id}`)
@@ -25,6 +26,7 @@ export default function EditarContaPage({ params }: PageProps) {
         setAccount(data)
         setDescription(data.description)
         setDueDate(new Date(data.dueDate).toISOString().split('T')[0])
+        setPaymentMethod(data.paymentMethod ?? '')
       })
   }, [id])
 
@@ -92,6 +94,20 @@ export default function EditarContaPage({ params }: PageProps) {
               value={dueDate} onChange={e => setDueDate(e.target.value)}
               className={inputClass}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Forma de pagamento <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-3">
+              {(['pix', 'boleto', 'caixa'] as const).map(m => (
+                <label key={m} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-medium cursor-pointer transition ${paymentMethod === m ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+                  <input type="radio" name="paymentMethod" value={m} checked={paymentMethod === m} onChange={() => setPaymentMethod(m)} required className="sr-only" />
+                  {m === 'pix' ? 'PIX' : m === 'boleto' ? 'Boleto' : 'Caixa'}
+                </label>
+              ))}
+            </div>
           </div>
 
           {state?.error && (

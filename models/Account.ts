@@ -19,6 +19,7 @@ const AccountSchema = new mongoose.Schema({
   status: { type: String, enum: ['open', 'paid', 'cancelled'], default: 'open' },
   cycle: { type: String, enum: ['one-time', 'monthly'], required: true },
   cycleConfig: { type: CycleConfigSchema },
+  paymentMethod: { type: String, enum: ['pix', 'boleto', 'caixa'], required: true },
   payments: [PaymentSchema],
   totalPaid: { type: Number, default: 0 },
 }, { timestamps: true })

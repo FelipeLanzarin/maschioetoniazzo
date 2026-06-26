@@ -72,12 +72,11 @@ export default function EditarClientePage({ params }: PageProps) {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                E-mail <span className="text-red-500">*</span>
+                E-mail
               </label>
               <input
                 name="email"
                 type="email"
-                required
                 defaultValue={client.email}
                 className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
               />
@@ -85,12 +84,11 @@ export default function EditarClientePage({ params }: PageProps) {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Telefone <span className="text-red-500">*</span>
+                Telefone
               </label>
               <input
                 name="phone"
                 type="tel"
-                required
                 defaultValue={client.phone}
                 className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
               />

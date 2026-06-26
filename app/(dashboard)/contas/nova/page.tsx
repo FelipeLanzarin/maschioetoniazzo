@@ -57,6 +57,20 @@ export default function NovaContaPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Forma de pagamento <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-3">
+              {(['pix', 'boleto', 'caixa'] as const).map(m => (
+                <label key={m} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 cursor-pointer has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50 has-[:checked]:text-indigo-700 transition">
+                  <input type="radio" name="paymentMethod" value={m} required className="sr-only" />
+                  {m === 'pix' ? 'PIX' : m === 'boleto' ? 'Boleto' : 'Caixa'}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Tipo de cobrança <span className="text-red-500">*</span>
             </label>

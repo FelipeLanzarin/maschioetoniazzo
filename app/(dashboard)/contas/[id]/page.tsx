@@ -73,6 +73,12 @@ export default async function ContaDetailPage({ params }: PageProps) {
             <p className="font-medium text-slate-900">{account.cycle === 'monthly' ? 'Mensal' : 'Avulsa'}</p>
           </div>
           <div>
+            <p className="text-xs text-slate-500 mb-0.5">Forma de pagamento</p>
+            <p className="font-medium text-slate-900">
+              {account.paymentMethod === 'pix' ? 'PIX' : account.paymentMethod === 'boleto' ? 'Boleto' : account.paymentMethod === 'caixa' ? 'Caixa' : '—'}
+            </p>
+          </div>
+          <div>
             <p className="text-xs text-slate-500 mb-0.5">Criada em</p>
             <p className="font-medium text-slate-900">{formatDate(account.createdAt)}</p>
           </div>

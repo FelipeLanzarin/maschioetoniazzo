@@ -15,11 +15,13 @@ export async function createClient(state: ClientFormState, formData: FormData): 
   const phone = formData.get('phone') as string
   const notes = formData.get('notes') as string
 
-  if (!name || !document || !email || !phone) return { error: 'Preencha todos os campos obrigatórios.' }
+  if (!name || !document) return { error: 'Preencha todos os campos obrigatórios.' }
   if (!validateDocument(document)) return { error: 'CPF ou CNPJ inválido.' }
 
   await connectDB()
-  const exists = await Client.findOne({ $or: [{ document: document.replace(/\D/g, '') }, { email }] })
+  const orConditions: object[] = [{ document: document.replace(/\D/g, '') }]
+  if (email) orConditions.push({ email })
+  const exists = await Client.findOne({ $or: orConditions })
   if (exists) return { error: 'CPF/CNPJ ou e-mail já cadastrado.' }
 
   await Client.create({ name, document: document.replace(/\D/g, ''), email, phone, notes })
@@ -33,11 +35,13 @@ export async function updateClient(id: string, state: ClientFormState, formData:
   const phone = formData.get('phone') as string
   const notes = formData.get('notes') as string
 
-  if (!name || !document || !email || !phone) return { error: 'Preencha todos os campos obrigatórios.' }
+  if (!name || !document) return { error: 'Preencha todos os campos obrigatórios.' }
   if (!validateDocument(document)) return { error: 'CPF ou CNPJ inválido.' }
 
   await connectDB()
-  const conflict = await Client.findOne({ _id: { $ne: id }, $or: [{ document: document.replace(/\D/g, '') }, { email }] })
+  const orConditions: object[] = [{ document: document.replace(/\D/g, '') }]
+  if (email) orConditions.push({ email })
+  const conflict = await Client.findOne({ _id: { $ne: id }, $or: orConditions })
   if (conflict) return { error: 'CPF/CNPJ ou e-mail já cadastrado.' }
 
   await Client.findByIdAndUpdate(id, { name, document: document.replace(/\D/g, ''), email, phone, notes })

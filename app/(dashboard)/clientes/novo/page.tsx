@@ -56,12 +56,11 @@ export default function NovoClientePage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                E-mail <span className="text-red-500">*</span>
+                E-mail
               </label>
               <input
                 name="email"
                 type="email"
-                required
                 value={fields.email}
                 onChange={update}
                 className={inputClass}
@@ -71,12 +70,11 @@ export default function NovoClientePage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Telefone <span className="text-red-500">*</span>
+                Telefone
               </label>
               <input
                 name="phone"
                 type="tel"
-                required
                 value={fields.phone}
                 onChange={update}
                 className={inputClass}

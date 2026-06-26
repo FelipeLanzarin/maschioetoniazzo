@@ -12,17 +12,18 @@ export async function createAccount(_prev: AccountFormState, formData: FormData)
   const description = formData.get('description') as string
   const amount = Number(formData.get('amount'))
   const cycle = formData.get('cycle') as string
+  const paymentMethod = formData.get('paymentMethod') as string
   const dueDate = formData.get('dueDate') as string
   const dueDay = Number(formData.get('dueDay'))
   const startMonth = formData.get('startMonth') as string
   const endMonth = formData.get('endMonth') as string
 
-  if (!clientId || !description || !amount || !cycle)
+  if (!clientId || !description || !amount || !cycle || !paymentMethod)
     return { error: 'Preencha todos os campos obrigatórios.' }
 
   if (cycle === 'one-time') {
     if (!dueDate) return { error: 'Informe a data de vencimento.' }
-    await Account.create({ clientId, amount, description, cycle, dueDate: new Date(dueDate), status: 'open', totalPaid: 0, payments: [] })
+    await Account.create({ clientId, amount, description, cycle, paymentMethod, dueDate: new Date(dueDate), status: 'open', totalPaid: 0, payments: [] })
     revalidatePath('/contas')
     redirect('/contas')
   }
@@ -37,7 +38,7 @@ export async function createAccount(_prev: AccountFormState, formData: FormData)
     while (y < ey || (y === ey && m <= em)) {
       const lastDay = new Date(y, m, 0).getDate()
       const day = Math.min(dueDay, lastDay)
-      accounts.push({ clientId, amount, description, cycle, cycleConfig: { dueDay, startMonth, endMonth }, dueDate: new Date(y, m - 1, day), status: 'open', totalPaid: 0, payments: [] })
+      accounts.push({ clientId, amount, description, cycle, paymentMethod, cycleConfig: { dueDay, startMonth, endMonth }, dueDate: new Date(y, m - 1, day), status: 'open', totalPaid: 0, payments: [] })
       m++
       if (m > 12) { m = 1; y++ }
     }
@@ -54,8 +55,9 @@ export async function updateAccount(id: string, _prev: AccountFormState, formDat
   const description = formData.get('description') as string
   const amount = Number(formData.get('amount'))
   const dueDate = formData.get('dueDate') as string
+  const paymentMethod = formData.get('paymentMethod') as string
 
-  if (!description || !amount || !dueDate)
+  if (!description || !amount || !dueDate || !paymentMethod)
     return { error: 'Preencha todos os campos obrigatórios.' }
 
   const account = await Account.findById(id)
@@ -64,6 +66,7 @@ export async function updateAccount(id: string, _prev: AccountFormState, formDat
   account.amount = amount
   account.description = description
   account.dueDate = new Date(dueDate)
+  account.paymentMethod = paymentMethod
   const balance = amount - account.totalPaid
   if (balance <= 0) account.status = 'paid'
   else if (account.status === 'paid') account.status = 'open'

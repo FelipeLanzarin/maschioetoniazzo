@@ -48,13 +48,15 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { name, document, email, phone, notes } = body
 
-  if (!name || !document || !email || !phone)
+  if (!name || !document)
     return NextResponse.json({ error: 'Campos obrigatórios faltando.' }, { status: 400 })
 
   if (!validateDocument(document))
     return NextResponse.json({ error: 'CPF ou CNPJ inválido.' }, { status: 400 })
 
-  const exists = await Client.findOne({ $or: [{ document: document.replace(/\D/g, '') }, { email }] })
+  const orConditions: object[] = [{ document: document.replace(/\D/g, '') }]
+  if (email) orConditions.push({ email })
+  const exists = await Client.findOne({ $or: orConditions })
   if (exists) return NextResponse.json({ error: 'CPF/CNPJ ou e-mail já cadastrado.' }, { status: 409 })
 
   const client = await Client.create({ name, document: document.replace(/\D/g, ''), email, phone, notes })

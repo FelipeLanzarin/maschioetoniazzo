@@ -24,16 +24,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const body = await req.json()
   const { name, document, email, phone, notes } = body
 
-  if (!name || !document || !email || !phone)
+  if (!name || !document)
     return NextResponse.json({ error: 'Campos obrigatórios faltando.' }, { status: 400 })
 
   if (!validateDocument(document))
     return NextResponse.json({ error: 'CPF ou CNPJ inválido.' }, { status: 400 })
 
-  const conflict = await Client.findOne({
-    _id: { $ne: id },
-    $or: [{ document: document.replace(/\D/g, '') }, { email }],
-  })
+  const orConditions: object[] = [{ document: document.replace(/\D/g, '') }]
+  if (email) orConditions.push({ email })
+  const conflict = await Client.findOne({ _id: { $ne: id }, $or: orConditions })
   if (conflict) return NextResponse.json({ error: 'CPF/CNPJ ou e-mail já cadastrado.' }, { status: 409 })
 
   const client = await Client.findByIdAndUpdate(

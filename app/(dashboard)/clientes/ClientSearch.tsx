@@ -10,7 +10,7 @@ interface Props {
 export function ClientSearch({ defaultQ = '', defaultInativos = false }: Props) {
   const router = useRouter()
   const params = useSearchParams()
-  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   function handleText(value: string) {
     clearTimeout(timer.current)

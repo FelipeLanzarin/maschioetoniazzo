@@ -1,6 +1,6 @@
 'use client'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 interface Props {
   defaultQ?: string
@@ -11,6 +11,8 @@ export function ClientSearch({ defaultQ = '', defaultInativos = false }: Props) 
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [inputValue, setInputValue] = useState(defaultQ)
+  const timer = useRef<ReturnType<typeof setTimeout>>()
 
   const updateParam = useCallback((key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -20,12 +22,20 @@ export function ClientSearch({ defaultQ = '', defaultInativos = false }: Props) 
     router.replace(`${pathname}?${params.toString()}`)
   }, [router, pathname, searchParams])
 
+  function handleSearch(value: string) {
+    setInputValue(value)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => {
+      updateParam('q', value || null)
+    }, 300)
+  }
+
   return (
     <div className="flex items-center gap-3">
       <input
         type="text"
-        defaultValue={defaultQ}
-        onChange={(e) => updateParam('q', e.target.value || null)}
+        value={inputValue}
+        onChange={(e) => handleSearch(e.target.value)}
         placeholder="Buscar por nome, documento ou e-mail..."
         className="flex-1 rounded-lg border border-slate-200 px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
       />

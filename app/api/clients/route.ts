@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import Client from '@/models/Client'
-import { getSession } from '@/lib/session'
+import { authenticate } from '@/lib/apiAuth'
 import { validateDocument } from '@/lib/validators'
 
 export async function GET(req: NextRequest) {
-  const session = await getSession()
-  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await authenticate(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await connectDB()
   const { searchParams } = req.nextUrl
@@ -41,8 +40,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession()
-  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await authenticate(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await connectDB()
   const body = await req.json()

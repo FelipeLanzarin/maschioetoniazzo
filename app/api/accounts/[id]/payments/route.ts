@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import Account from '@/models/Account'
-import { getSession } from '@/lib/session'
+import { authenticate } from '@/lib/apiAuth'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession()
-  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await authenticate(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await connectDB()
   const { id } = await params

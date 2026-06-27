@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import Account from '@/models/Account'
 import '@/models/Client'
-import { getSession } from '@/lib/session'
+import { authenticate } from '@/lib/apiAuth'
 import { startOfToday } from '@/lib/dates'
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession()
-  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await authenticate(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await connectDB()
   const { id } = await params
@@ -22,8 +21,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession()
-  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await authenticate(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await connectDB()
   const { id } = await params
@@ -47,9 +45,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   return NextResponse.json(account)
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession()
-  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await authenticate(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await connectDB()
   const { id } = await params

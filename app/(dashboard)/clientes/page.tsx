@@ -5,17 +5,21 @@ import { verifySession } from '@/lib/dal'
 import { Badge } from '@/components/ui/Badge'
 import { formatDocument } from '@/lib/formatters'
 import { ClientSearch } from './ClientSearch'
+import { ClientPagination } from './ClientPagination'
+
+const PAGE_SIZE = 50
 
 interface PageProps {
-  searchParams: Promise<{ q?: string; inativos?: string }>
+  searchParams: Promise<{ q?: string; inativos?: string; page?: string }>
 }
 
 export default async function ClientesPage({ searchParams }: PageProps) {
   await verifySession()
   await connectDB()
 
-  const { q, inativos } = await searchParams
+  const { q, inativos, page: pageParam } = await searchParams
   const includeInactive = inativos === 'true'
+  const page = Math.max(1, parseInt(pageParam ?? '1'))
 
   const filter: Record<string, unknown> = includeInactive ? {} : { active: true }
   if (q) filter.$or = [
@@ -24,14 +28,19 @@ export default async function ClientesPage({ searchParams }: PageProps) {
     { document: { $regex: q.replace(/\D/g, ''), $options: 'i' } },
   ]
 
-  const clients = await Client.find(filter).sort({ name: 1 }).lean()
+  const [total, clients] = await Promise.all([
+    Client.countDocuments(filter),
+    Client.find(filter).sort({ name: 1 }).skip((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).lean(),
+  ])
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Clientes</h2>
-          <p className="text-slate-500 text-sm mt-0.5">{clients.length} cliente{clients.length !== 1 ? 's' : ''} encontrado{clients.length !== 1 ? 's' : ''}</p>
+          <p className="text-slate-500 text-sm mt-0.5">{total} cliente{total !== 1 ? 's' : ''}</p>
         </div>
         <Link
           href="/clientes/novo"
@@ -82,6 +91,8 @@ export default async function ClientesPage({ searchParams }: PageProps) {
             </table>
           </div>
         )}
+
+        <ClientPagination page={page} totalPages={totalPages} total={total} />
       </div>
     </div>
   )

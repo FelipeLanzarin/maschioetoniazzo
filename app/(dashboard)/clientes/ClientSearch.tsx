@@ -16,6 +16,7 @@ export function ClientSearch({ defaultQ = '', defaultInativos = false }: Props) 
     const params = new URLSearchParams(searchParams.toString())
     if (value) params.set(key, value)
     else params.delete(key)
+    params.delete('page')
     router.replace(`${pathname}?${params.toString()}`)
   }, [router, pathname, searchParams])
 

@@ -1,11 +1,10 @@
-import Link from 'next/link'
 import { connectDB } from '@/lib/mongodb'
 import Client from '@/models/Client'
 import { verifySession } from '@/lib/dal'
-import { Badge } from '@/components/ui/Badge'
-import { formatDocument } from '@/lib/formatters'
 import { ClientSearch } from './ClientSearch'
+import { ClientTable } from './ClientTable'
 import { ClientPagination } from './ClientPagination'
+import Link from 'next/link'
 
 const PAGE_SIZE = 50
 
@@ -22,16 +21,29 @@ export default async function ClientesPage({ searchParams }: PageProps) {
   const page = Math.max(1, parseInt(pageParam ?? '1'))
 
   const filter: Record<string, unknown> = includeInactive ? {} : { active: true }
-  if (q) filter.$or = [
-    { name: { $regex: q, $options: 'i' } },
-    { email: { $regex: q, $options: 'i' } },
-    { document: { $regex: q.replace(/\D/g, ''), $options: 'i' } },
-  ]
+  if (q) {
+    const docQ = q.replace(/\D/g, '')
+    const $or: object[] = [
+      { name: { $regex: q, $options: 'i' } },
+      { email: { $regex: q, $options: 'i' } },
+    ]
+    if (docQ) $or.push({ document: { $regex: docQ, $options: 'i' } })
+    filter.$or = $or
+  }
 
-  const [total, clients] = await Promise.all([
+  const [total, rawClients] = await Promise.all([
     Client.countDocuments(filter),
     Client.find(filter).sort({ name: 1 }).skip((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).lean(),
   ])
+
+  const clients = (rawClients as any[]).map(c => ({
+    _id: String(c._id),
+    name: String(c.name),
+    document: String(c.document),
+    email: String(c.email ?? ''),
+    phone: String(c.phone ?? ''),
+    active: Boolean(c.active),
+  }))
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -55,42 +67,7 @@ export default async function ClientesPage({ searchParams }: PageProps) {
           <ClientSearch defaultQ={q} defaultInativos={includeInactive} />
         </div>
 
-        {clients.length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-slate-400 text-sm">Nenhum cliente encontrado.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left px-4 py-3 text-slate-500 font-medium">Nome</th>
-                  <th className="text-left px-4 py-3 text-slate-500 font-medium">Documento</th>
-                  <th className="text-left px-4 py-3 text-slate-500 font-medium">E-mail</th>
-                  <th className="text-left px-4 py-3 text-slate-500 font-medium">Telefone</th>
-                  <th className="text-left px-4 py-3 text-slate-500 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clients.map((client: any) => (
-                  <tr key={client._id.toString()} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition">
-                    <td className="px-4 py-3">
-                      <Link href={`/clientes/${client._id}`} className="font-medium text-slate-900 hover:text-indigo-600 transition">
-                        {client.name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">{formatDocument(client.document)}</td>
-                    <td className="px-4 py-3 text-slate-600">{client.email}</td>
-                    <td className="px-4 py-3 text-slate-600">{client.phone}</td>
-                    <td className="px-4 py-3">
-                      <Badge label={client.active ? 'Ativo' : 'Inativo'} variant={client.active ? 'green' : 'gray'} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <ClientTable clients={clients} />
 
         <ClientPagination page={page} totalPages={totalPages} total={total} />
       </div>

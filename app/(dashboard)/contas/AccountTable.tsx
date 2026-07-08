@@ -13,9 +13,10 @@ interface Account {
   balance: number
   status: 'open' | 'paid' | 'cancelled'
   overdue: boolean
+  lastPaymentDate?: string
 }
 
-export function AccountTable({ accounts }: { accounts: Account[] }) {
+export function AccountTable({ accounts, showPaymentDate = false }: { accounts: Account[]; showPaymentDate?: boolean }) {
   const router = useRouter()
 
   if (accounts.length === 0) {
@@ -34,6 +35,7 @@ export function AccountTable({ accounts }: { accounts: Account[] }) {
             <th className="text-left px-4 py-3">Cliente</th>
             <th className="text-left px-4 py-3">Descrição</th>
             <th className="text-left px-4 py-3">Vencimento</th>
+            {showPaymentDate && <th className="text-left px-4 py-3">Dt. Pagamento</th>}
             <th className="text-right px-4 py-3">Valor</th>
             <th className="text-right px-4 py-3">Pago</th>
             <th className="text-right px-4 py-3">Saldo</th>
@@ -56,6 +58,11 @@ export function AccountTable({ accounts }: { accounts: Account[] }) {
               <td className={`px-4 py-3 text-sm ${account.overdue ? 'text-red-600 font-medium' : 'text-slate-600'}`}>
                 {formatDate(account.dueDate)}
               </td>
+              {showPaymentDate && (
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {account.lastPaymentDate ? formatDate(account.lastPaymentDate) : '—'}
+                </td>
+              )}
               <td className="px-4 py-3 text-sm text-slate-900 text-right font-medium">
                 {formatCurrency(account.amount)}
               </td>

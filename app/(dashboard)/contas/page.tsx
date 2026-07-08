@@ -58,17 +58,27 @@ export default async function ContasPage({ searchParams }: { searchParams: Promi
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  const accounts = (rawAccounts as any[]).map(a => ({
-    _id: String(a._id),
-    clientId: a.clientId ? { name: String(a.clientId.name) } : undefined,
-    description: String(a.description),
-    dueDate: (a.dueDate as Date).toISOString(),
-    amount: Number(a.amount),
-    totalPaid: Number(a.totalPaid),
-    status: a.status as 'open' | 'paid' | 'cancelled',
-    overdue: a.status === 'open' && new Date(a.dueDate) < today,
-    balance: Number(a.amount) - Number(a.totalPaid),
-  }))
+  const showPaymentDate = status === 'paid' || status === 'all'
+
+  const accounts = (rawAccounts as any[]).map(a => {
+    const payments: { paymentDate: Date }[] = a.payments ?? []
+    const lastPayment = payments.length > 0
+      ? payments.reduce((latest, p) => new Date(p.paymentDate) > new Date(latest.paymentDate) ? p : latest)
+      : null
+
+    return {
+      _id: String(a._id),
+      clientId: a.clientId ? { name: String(a.clientId.name) } : undefined,
+      description: String(a.description),
+      dueDate: (a.dueDate as Date).toISOString(),
+      amount: Number(a.amount),
+      totalPaid: Number(a.totalPaid),
+      status: a.status as 'open' | 'paid' | 'cancelled',
+      overdue: a.status === 'open' && new Date(a.dueDate) < today,
+      balance: Number(a.amount) - Number(a.totalPaid),
+      lastPaymentDate: lastPayment ? new Date(lastPayment.paymentDate).toISOString() : undefined,
+    }
+  })
 
   return (
     <div>
@@ -90,7 +100,7 @@ export default async function ContasPage({ searchParams }: { searchParams: Promi
           <AccountFilters />
         </div>
 
-        <AccountTable accounts={accounts} />
+        <AccountTable accounts={accounts} showPaymentDate={showPaymentDate} />
 
         <Pagination page={page} totalPages={totalPages} total={total} />
       </div>

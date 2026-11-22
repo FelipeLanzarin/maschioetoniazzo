@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { formatCurrency, formatDate } from '@/lib/formatters'
 import { CurrencyInput } from '@/components/financial/CurrencyInput'
 
-interface Payment { _id: string; paymentDate: string; amountPaid: number }
+interface Payment { _id: string; paymentDate: string; amountPaid: number; interest: number }
 
 interface Props {
   accountId: string
@@ -19,6 +19,7 @@ export function PaymentSection({ accountId, status, balance, payments }: Props) 
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
   const [error, setError] = useState('')
   const [amountKey, setAmountKey] = useState(0)
+  const [interestKey, setInterestKey] = useState(0)
   const [initialCents, setInitialCents] = useState(0)
   const [pending, setPending] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -29,17 +30,19 @@ export function PaymentSection({ accountId, status, balance, payments }: Props) 
     setPending(true)
     const formData = new FormData(e.currentTarget)
     const amountPaid = Number(formData.get('amountPaid'))
+    const interest = Number(formData.get('interest') ?? 0)
     const res = await fetch(`/api/accounts/${accountId}/payments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentDate: date, amountPaid }),
+      body: JSON.stringify({ paymentDate: date, amountPaid, interest }),
     })
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}))
     setPending(false)
-    if (!res.ok) { setError(data.error); return }
+    if (!res.ok) { setError(data.error ?? 'Erro ao registrar pagamento. Tente novamente.'); return }
     setShowForm(false)
     setInitialCents(0)
     setAmountKey(k => k + 1)
+    setInterestKey(k => k + 1)
     router.refresh()
   }
 
@@ -94,6 +97,14 @@ export function PaymentSection({ accountId, status, balance, payments }: Props) 
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition w-40"
             />
           </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Juros</label>
+            <CurrencyInput
+              key={interestKey}
+              name="interest"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition w-32"
+            />
+          </div>
           <div className="flex gap-2">
             <button
               type="submit" disabled={pending}
@@ -119,7 +130,9 @@ export function PaymentSection({ accountId, status, balance, payments }: Props) 
           <thead>
             <tr className="text-xs font-medium text-slate-500 uppercase tracking-wide border-b border-slate-100">
               <th className="text-left px-6 py-3">Data</th>
-              <th className="text-right px-6 py-3">Valor pago</th>
+              <th className="text-right px-6 py-3">Valor</th>
+              <th className="text-right px-6 py-3">Juros</th>
+              <th className="text-right px-6 py-3">Total pago</th>
               <th className="px-6 py-3" />
             </tr>
           </thead>
@@ -127,7 +140,9 @@ export function PaymentSection({ accountId, status, balance, payments }: Props) 
             {payments.map((p) => (
               <tr key={p._id} className="hover:bg-slate-50 transition">
                 <td className="px-6 py-3 text-sm text-slate-700">{formatDate(p.paymentDate)}</td>
-                <td className="px-6 py-3 text-sm text-green-700 font-medium text-right">{formatCurrency(p.amountPaid)}</td>
+                <td className="px-6 py-3 text-sm text-slate-700 text-right">{formatCurrency(p.amountPaid)}</td>
+                <td className="px-6 py-3 text-sm text-slate-600 text-right">{p.interest > 0 ? formatCurrency(p.interest) : '—'}</td>
+                <td className="px-6 py-3 text-sm text-green-700 font-medium text-right">{formatCurrency(p.amountPaid + p.interest)}</td>
                 <td className="px-6 py-3 text-right">
                   <button
                     onClick={() => handleDelete(p._id)}

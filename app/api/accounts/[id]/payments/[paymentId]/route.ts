@@ -13,8 +13,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   account.payments = account.payments.filter((p: any) => p._id.toString() !== paymentId)
   account.totalPaid = account.payments.reduce((sum: number, p: any) => sum + p.amountPaid, 0)
+  account.totalInterest = account.payments.reduce((sum: number, p: any) => sum + (p.interest ?? 0), 0)
   if (account.totalPaid < account.amount && account.status === 'paid') account.status = 'open'
 
-  await account.save()
+  await account.save({ validateModifiedOnly: true })
   return NextResponse.json(account)
 }

@@ -10,6 +10,7 @@ interface Account {
   dueDate: string
   amount: number
   totalPaid: number
+  totalInterest: number
   balance: number
   status: 'open' | 'paid' | 'cancelled'
   overdue: boolean
@@ -37,6 +38,7 @@ export function AccountTable({ accounts, showPaymentDate = false }: { accounts: 
             <th className="text-left px-4 py-3">Vencimento</th>
             {showPaymentDate && <th className="text-left px-4 py-3">Dt. Pagamento</th>}
             <th className="text-right px-4 py-3">Valor</th>
+            <th className="text-right px-4 py-3">Juros</th>
             <th className="text-right px-4 py-3">Pago</th>
             <th className="text-right px-4 py-3">Saldo</th>
             <th className="text-left px-4 py-3">Status</th>
@@ -65,6 +67,9 @@ export function AccountTable({ accounts, showPaymentDate = false }: { accounts: 
               )}
               <td className="px-4 py-3 text-sm text-slate-900 text-right font-medium">
                 {formatCurrency(account.amount)}
+              </td>
+              <td className="px-4 py-3 text-sm text-slate-600 text-right">
+                {account.totalInterest > 0 ? formatCurrency(account.totalInterest) : '—'}
               </td>
               <td className="px-4 py-3 text-sm text-green-700 text-right">
                 {formatCurrency(account.totalPaid)}

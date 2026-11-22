@@ -16,6 +16,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   return NextResponse.json({
     ...account,
     overdue: account.status === 'open' && new Date(account.dueDate) < startOfToday(),
+    totalInterest: account.totalInterest ?? 0,
+    totalReceived: account.totalPaid + (account.totalInterest ?? 0),
     balance: account.amount - account.totalPaid,
   })
 }

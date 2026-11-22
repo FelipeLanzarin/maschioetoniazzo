@@ -22,6 +22,8 @@ export default async function ContaDetailPage({ params }: PageProps) {
 
   const overdue = account.status === 'open' && new Date(account.dueDate) < startOfToday()
   const balance = account.amount - account.totalPaid
+  const totalInterest = Number(account.totalInterest ?? 0)
+  const totalReceived = account.totalPaid + totalInterest
 
   const clientId = account.clientId?._id?.toString() ?? account.clientId?.toString()
   const clientName = account.clientId?.name ?? '—'
@@ -47,14 +49,18 @@ export default async function ContaDetailPage({ params }: PageProps) {
         </div>
 
         {/* Balance cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <div className="bg-slate-50 rounded-lg p-4">
             <p className="text-xs text-slate-500 font-medium mb-1">Valor</p>
             <p className="text-lg font-semibold text-slate-900">{formatCurrency(account.amount)}</p>
           </div>
+          <div className="bg-slate-50 rounded-lg p-4">
+            <p className="text-xs text-slate-500 font-medium mb-1">Juros</p>
+            <p className="text-lg font-semibold text-slate-900">{formatCurrency(totalInterest)}</p>
+          </div>
           <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-xs text-slate-500 font-medium mb-1">Pago</p>
-            <p className="text-lg font-semibold text-green-700">{formatCurrency(account.totalPaid)}</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">Total pago</p>
+            <p className="text-lg font-semibold text-green-700">{formatCurrency(totalReceived)}</p>
           </div>
           <div className={`rounded-lg p-4 ${balance > 0 ? 'bg-amber-50' : 'bg-green-50'}`}>
             <p className="text-xs text-slate-500 font-medium mb-1">Saldo</p>
@@ -107,6 +113,7 @@ export default async function ContaDetailPage({ params }: PageProps) {
           _id: String(p._id),
           paymentDate: (p.paymentDate as Date).toISOString(),
           amountPaid: Number(p.amountPaid),
+          interest: Number(p.interest ?? 0),
         }))}
       />
     </div>

@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
   const result = accounts.map((a: any) => ({
     ...a,
     overdue: a.status === 'open' && new Date(a.dueDate) < today,
+    totalInterest: a.totalInterest ?? 0,
+    totalReceived: a.totalPaid + (a.totalInterest ?? 0),
     balance: a.amount - a.totalPaid,
   }))
 

@@ -8,10 +8,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   await connectDB()
   const { id } = await params
-  const { paymentDate, amountPaid } = await req.json()
+  const { paymentDate, amountPaid, interest: rawInterest } = await req.json()
+  const interest = rawInterest === undefined || rawInterest === null || rawInterest === '' ? 0 : Number(rawInterest)
 
   if (!paymentDate || !amountPaid || amountPaid <= 0)
     return NextResponse.json({ error: 'Dados de pagamento inválidos.' }, { status: 400 })
+  if (!Number.isFinite(interest) || interest < 0)
+    return NextResponse.json({ error: 'Valor de juros inválido.' }, { status: 400 })
 
   const account = await Account.findById(id)
   if (!account) return NextResponse.json({ error: 'Conta não encontrada.' }, { status: 404 })
@@ -23,10 +26,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (paidCents > balanceCents)
     return NextResponse.json({ error: `Valor excede o saldo devedor de R$ ${(balanceCents / 100).toFixed(2)}.` }, { status: 400 })
 
-  account.payments.push({ paymentDate: new Date(paymentDate), amountPaid })
+  account.payments.push({ paymentDate: new Date(paymentDate), amountPaid, interest })
   account.totalPaid = account.payments.reduce((sum: number, p: any) => sum + p.amountPaid, 0)
+  account.totalInterest = account.payments.reduce((sum: number, p: any) => sum + (p.interest ?? 0), 0)
   if (account.totalPaid >= account.amount) account.status = 'paid'
 
-  await account.save()
+  await account.save({ validateModifiedOnly: true })
   return NextResponse.json(account)
 }

@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 const PaymentSchema = new mongoose.Schema({
   paymentDate: { type: Date, required: true },
   amountPaid: { type: Number, required: true },
+  interest: { type: Number, default: 0 },
 }, { timestamps: true })
 
 const CycleConfigSchema = new mongoose.Schema({
@@ -22,6 +23,7 @@ const AccountSchema = new mongoose.Schema({
   paymentMethod: { type: String, enum: ['pix', 'boleto', 'caixa'], required: true },
   payments: [PaymentSchema],
   totalPaid: { type: Number, default: 0 },
+  totalInterest: { type: Number, default: 0 },
 }, { timestamps: true })
 
 export default mongoose.models.Account || mongoose.model('Account', AccountSchema)

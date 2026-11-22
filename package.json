@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:backup": "node --env-file=.env.local scripts/backup-db.mjs",
+    "db:restore": "node --env-file=.env.local scripts/restore-db.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
